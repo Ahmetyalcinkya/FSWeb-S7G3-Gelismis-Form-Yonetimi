@@ -4,11 +4,12 @@ import Form from "./Components/Form";
 import axios from "axios";
 import * as Yup from "yup";
 
-const member = [
+const members = [
   {
     name: "Ahmet",
     email: "ahmetcan.yalcinkaya55@gmail.com",
     password: "123456",
+    terms: true,
   },
 ];
 
@@ -16,23 +17,24 @@ const formDataInitial = {
   name: "",
   email: "",
   password: "",
-  // term: "false",
+  terms: false,
 };
 
 function App() {
-  const [member, setMember] = useState(member);
+  const [member, setMember] = useState(members);
   const [isValid, setValid] = useState(false);
   const [formData, setFormData] = useState(formDataInitial);
   const [formErr, setFormErr] = useState({
     name: "",
     email: "",
     password: "",
-    // term: "",
+    terms: "",
   });
 
   //TODO YUP SCHEMA
 
   const formSchema = Yup.object().shape({
+    name: Yup.string().required("İsim giriniz."),
     email: Yup.string()
       .email("Geçerli bir e-mail adresi giriniz.")
       .required("Bu alanın doldurulması zorunludur.")
@@ -53,7 +55,6 @@ function App() {
   const submitHandler = (e) => {
     e.preventDefault();
     axios.post("https://reqres.in/api/users", formData).then((res) => {
-      console.log("Form başarılı bir şekilde oluşturuldu", res.data);
       setFormData(formDataInitial);
     });
   };
@@ -61,14 +62,14 @@ function App() {
   //TODO CHANGEHANDLER
 
   const changeHandler = (e) => {
-    const { value, name, type, checked } = e.target;
-    value = type == "checkbox" ? checked : value;
+    let { value, name, type, checked } = e.target;
+    value = type === "checkbox" ? checked : value;
     setFormData({ ...formData, [name]: value });
 
     //! HATA KONTROLÜ
 
     Yup.reach(formSchema, name)
-      .validate(type == "checkbox" ? checked : value)
+      .validate(value)
       .then((valid) => {
         setFormErr({ ...formErr, [name]: "" });
       })
@@ -80,7 +81,7 @@ function App() {
   //TODO USEEFFECT
 
   useEffect(() => {
-    formSchema.isValid(formData).then((valid) => setValid(!valid));
+    formSchema.isValid(formData).then((valid) => setValid(valid));
   }, [formData]);
 
   return (
@@ -95,5 +96,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
