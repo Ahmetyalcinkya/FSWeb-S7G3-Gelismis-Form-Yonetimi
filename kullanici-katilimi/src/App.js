@@ -6,6 +6,7 @@ import * as Yup from "yup";
 
 const members = [
   {
+    id: 1,
     name: "Ahmet",
     email: "ahmetcan.yalcinkaya55@gmail.com",
     password: "123456",
@@ -37,10 +38,7 @@ function App() {
     name: Yup.string().required("İsim giriniz."),
     email: Yup.string()
       .email("Geçerli bir e-mail adresi giriniz.")
-      .required("Bu alanın doldurulması zorunludur.")
-      .test("same-email", "Bu mail adresi zaten kayıtlı!", (value, context) => {
-        return value === member.email;
-      }),
+      .required("Bu alanın doldurulması zorunludur."),
     password: Yup.string()
       .required("Şifre giriniz.")
       .min(8, "Şifreniz minimum 8 karakter uzunluğunda olmalıdır."),
@@ -55,6 +53,8 @@ function App() {
   const submitHandler = (e) => {
     e.preventDefault();
     axios.post("https://reqres.in/api/users", formData).then((res) => {
+      formData.id = member[member.length - 1].id + 1;
+      setMember([...member, formData]);
       setFormData(formDataInitial);
     });
   };
@@ -74,14 +74,18 @@ function App() {
         setFormErr({ ...formErr, [name]: "" });
       })
       .catch((err) => {
-        setFormErr({ ...formErr, [name]: err.formErr[0] });
+        setFormErr({ ...formErr, [name]: err.errors[0] });
       });
   };
 
   //TODO USEEFFECT
 
   useEffect(() => {
-    formSchema.isValid(formData).then((valid) => setValid(valid));
+    formSchema.isValid(formData).then((valid) => {
+      //console.log(valid);
+      //console.log(formData);
+      setValid(valid);
+    });
   }, [formData]);
 
   return (
